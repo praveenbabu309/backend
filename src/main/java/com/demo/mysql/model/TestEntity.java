@@ -1,4 +1,4 @@
-package com.demo.mysql.Entity;
+package com.demo.mysql.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -18,4 +18,6 @@ public class TestEntity {
 	@Column(name="id")
 	private Long id;
 	private String name;
+	
+	
 }
