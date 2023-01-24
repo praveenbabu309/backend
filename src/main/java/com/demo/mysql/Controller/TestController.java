@@ -58,8 +58,8 @@ TestEntity emp=testRepo.getAllEmployeeById(id);
 		
 	}
 
-	@DeleteMapping("/deleteemployee/{id}")
-	public ResponseEntity<Map<String, Boolean>> deleteEmployee(Long id) {
+	@PostMapping("/deleteemployee/{id}")
+	public ResponseEntity<Map<String, Boolean>> deleteEmployee(@PathVariable Long id) {
 		TestEntity emp = testRepo.getAllEmployeeById(id);
 		testRepo.delete(emp);
 		Map<String, Boolean> response = new HashMap<>();
