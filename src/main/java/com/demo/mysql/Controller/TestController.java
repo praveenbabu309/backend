@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.demo.mysql.dao.TestRepository;
 import com.demo.mysql.model.TestEntity;
+import com.demo.mysql.service.Employeeservice;
 
 @CrossOrigin(origins="http://localhost:3000")
 @RestController
@@ -30,6 +32,8 @@ public class TestController {
 	
 	@Autowired
 	private TestRepository testRepo;
+	@Autowired
+	private Employeeservice empservice;
 		
 	@GetMapping("/employees")
 	public List<TestEntity> get() {
@@ -65,6 +69,22 @@ TestEntity emp=testRepo.getAllEmployeeById(id);
 		Map<String, Boolean> response = new HashMap<>();
 		response.put("Deleted Successfully", Boolean.TRUE);
 		return ResponseEntity.ok(response);
+	}
+	
+	@PostMapping("/deletemultipleemployee")
+	public ResponseEntity<String> bulkDeleteEmployee(@RequestBody List<Long>id) {
+		id.forEach(ids->{
+			if(testRepo.existsById(ids)){
+		testRepo.deleteById(ids);}
+		});
+		return ResponseEntity
+		        .status(HttpStatus.ACCEPTED)
+		        .body("Deleted Successfully");
+	}
+	
+	@PostMapping("/bulkedit")
+	public ResponseEntity<String> bulkedit(@RequestBody List<TestEntity>id){
+		return empservice.bulkedit(id);
 	}
 	
 }
