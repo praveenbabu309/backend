@@ -1,8 +1,18 @@
-package com.demo.mysql.controller;
+package com.demo.mysql.Controller;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,19 +22,51 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
-
+import com.demo.mysql.vo.ResponseVo;
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvValidationException;
 import com.demo.mysql.dao.TestRepository;
 import com.demo.mysql.model.TestEntity;
+import com.demo.mysql.model.UserEntity;
 import com.demo.mysql.service.Employeeservice;
-import com.demo.mysql.vo.ResponseVo;
 
-@CrossOrigin(origins="http://localhost:3000")
+@CrossOrigin(origins="*")
 @RestController
 @RequestMapping("/api")
-public class TestController {
+
+public class UserController {
+
 	
+	@SuppressWarnings("unlikely-arg-type")
+	@PostMapping("/login")
+	public ResponseVo<Object> login(@RequestBody UserEntity user ) {
+		if ("a".equals(user.getUserName()) && "b".equals(user.getPassword())) {
+//			HttpSession newSession = request.getSession(true);
+//			newSession.setAttribute("session", "abcdef1234");
+		String token= empservice.generateToken( user.getUserName());
+			return ResponseVo.builder().status(HttpStatus.OK).message(token).build();
+		} else {
+			return ResponseVo.builder().status(HttpStatus.BAD_REQUEST).message("fail").build();
+		}
+	}
+	
+	@PostMapping("/logout")
+	public String login( HttpServletRequest request,
+			HttpServletRequest response) {
+		HttpSession session = request.getSession(false);
+		if (session != null && session.getAttribute("session") != null) {
+			session.invalidate();
+			return "Logout success";
+		} else {
+			return "invalid";
+		}
+	}
+	
+
 	@Autowired
 	private TestRepository testRepo;
 	@Autowired
@@ -44,9 +86,6 @@ public class TestController {
 		 return new ResponseEntity<>(
 		         res, 
 		          HttpStatus.CONFLICT);
-			
-		 
-		 
 		 }
 		 else {
 			 testRepo.save(entity);
@@ -103,5 +142,36 @@ TestEntity emp=testRepo.getAllEmployeeById(id);
 		return empservice.bulkadd(entity);
 	}
 	
-}
+	@PostMapping("/csvdownload")
+	public ResponseEntity<ResponseVo> csvdownload (@RequestBody boolean isCsvDownload){
+		return empservice.csvdownload(isCsvDownload);
+	}
+	
+	@PostMapping("/csvAdd")
+	public ResponseEntity<ResponseVo> csvAdd(@RequestParam("file") MultipartFile file) throws IOException, CsvValidationException{
+		if (!file.isEmpty()) {
+	        try (InputStream inputStream = file.getInputStream()) {
+	            try (CSVReader reader = new CSVReader(new InputStreamReader(inputStream))) {
+	                String[] line;
+	                int i=0;
+	                while ((line = reader.readNext()) != null) {
+	                	String a;
+	                	for(int k=0 ;k<line.length;k++) {
+	                		a=line[k];
+	                	}
+	                }
+	                
+	            }
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	           
+	        }
+	       
+	}
+		ResponseVo res = ResponseVo.builder().status(HttpStatus.OK).message("Success").build();
+		return new ResponseEntity<>(res, HttpStatus.OK);
+	}
+	
+		
+	}
 

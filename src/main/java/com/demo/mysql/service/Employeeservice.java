@@ -1,9 +1,13 @@
 package com.demo.mysql.service;
 
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.StringJoiner;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -50,10 +54,11 @@ public class Employeeservice {
 				{
 					nonduplicate.add(row.getId().intValue());
 				if (empRepo.existsById(row.getId())) {
-					ResponseVo res = ResponseVo.builder().status(HttpStatus.CONFLICT).id(row.getId()).message("Given Id is already presented")
+					ResponseVo res = ResponseVo.builder().status(HttpStatus.CONFLICT).id(row.getId()).message(row.getId()+" is already presented")
 							.build();
 					return new ResponseEntity<>(res, HttpStatus.CONFLICT);
 				}
+				
 			}
 				else
 				{
@@ -72,5 +77,41 @@ public class Employeeservice {
 			ResponseVo res = ResponseVo.builder().status(HttpStatus.BAD_GATEWAY).message("fail").build();
 			return new ResponseEntity<>(res, HttpStatus.BAD_GATEWAY);
 		}
+	}
+
+	public ResponseEntity<ResponseVo> csvdownload(boolean isCSVlist) {
+		StringJoiner joiner = new StringJoiner(", ");
+		joiner.add("Id");
+		joiner.add("Name");
+		StringBuilder result = new StringBuilder();
+		result.append(joiner);
+		result.append(System.lineSeparator());
+		if(isCSVlist) {
+			
+			List<TestEntity> emp= empRepo.findAll();
+			for(TestEntity row:emp){
+				joiner = new StringJoiner(", ");
+				joiner.add(Long.toString(row.getId()));
+				joiner.add(row.getName());
+				result.append(joiner);
+				result.append(System.lineSeparator());
+			}
+			
+		}
+		ResponseVo res = ResponseVo.builder().status(HttpStatus.OK).message(result.toString()).build();
+		return new ResponseEntity<>(res, HttpStatus.OK);
+	}
+	
+	public String generateToken( String username) {
+        Date now = new Date();
+        Date expiration = new Date(now.getTime() + 86450000);
+        
+        return Jwts.builder()
+                .setSubject(username)
+                .claim("userId", "1")
+                .setIssuedAt(now)
+                .setExpiration(expiration)
+                .signWith(Keys.hmacShaKeyFor("abcdefghijklmnoprqssfijsbdfeeeeeeeeeeeeeeeeeeeeeeef".getBytes()))
+                .compact();
 	}
 }
